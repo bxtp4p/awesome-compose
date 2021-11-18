@@ -5,4 +5,7 @@ server {
         proxy_pass   http://backend:8000;
     }
 
+    location = /nginx_status {
+        stub_status;
+    }
 }

@@ -13,6 +13,7 @@ services:
         condition: service_healthy
   db:
     image: mysql:8.0.19
+    hostname: mysql-prod-0.tubalinal.io
     command: '--default-authentication-plugin=mysql_native_password'
     restart: always
     healthcheck:
@@ -28,12 +29,34 @@ services:
       - MYSQL_DATABASE=example
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
 
-  proxy:
+  nginx-proxy:
     build: proxy
+    hostname: nginx-proxy-prod-0.tubalinal.io
     ports:
-      - 80:80
+      - 80
     depends_on: 
       - backend
+
+  loadgen:
+    image: locustio/locust
+    ports:
+     - 8089
+    volumes:
+      - ./loadgen:/mnt/locust
+    command: -f /mnt/locust/locust-loadgen.py --headless -H http://nginx-proxy -u 4 -r 1
+  
+  otel-collector:
+    image: quay.io/signalfx/splunk-otel-collector:0.37.1
+    hostname: nginx-aspnet-mysql-example.tubalinal.io
+    env_file:
+      - .env.us0
+    volumes:
+       - "./otel-collector/gateway_config.yaml:/etc/otel/collector/gateway_config.yaml"
+    ports:
+      - "4317"
+      - "8006"
+
+
 volumes:
   db-data:
 secrets:
