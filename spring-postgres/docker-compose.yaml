@@ -3,25 +3,55 @@ services:
   backend:
     build: backend
     ports:
-      - 8080:8080
+      - 8080
     environment:
-      - POSTGRES_DB=example
+      - POSTGRES_DB=hipstershop
     networks:
       - spring-postgres
   db:
     image: postgres
     restart: always
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c max_connections=200
     secrets:
       - db-password
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./db/init-db:/docker-entrypoint-initdb.d
     networks:
       - spring-postgres
     environment:
-      - POSTGRES_DB=example
+      - POSTGRES_DB=hipstershop
       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     expose:
       - 5432
+
+  loadgen:
+    image: locustio/locust
+    ports:
+     - 8089
+    volumes:
+      - ./loadgen:/mnt/locust
+    depends_on:
+      - backend
+    command: -f /mnt/locust/locust-loadgen.py --headless -H http://backend:8080 -u 2 -r 1
+    networks:
+      - spring-postgres
+  
+  otel-collector:
+    image: quay.io/signalfx/splunk-otel-collector:0.37.1
+    hostname: hipstershop-galactus.postgres
+    env_file:
+      - .env.us0
+    volumes:
+       - "./otel-collector/gateway_config.yaml:/etc/otel/collector/gateway_config.yaml"
+    ports:
+      - "4317"
+      - "8006"
+    networks:
+      - spring-postgres
+    depends_on:
+      - db
+
 volumes:
   db-data:
 secrets:
