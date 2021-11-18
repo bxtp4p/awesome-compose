@@ -13,7 +13,6 @@ Project structure:
 
 [_docker-compose.yaml_](docker-compose.yaml)
 ```
-version: "3.7"
 services:
   web:
     build: vuejs
@@ -23,7 +22,7 @@ services:
     - ./vuejs:/project
     - /project/node_modules
 ```
-The compose file defines an application with one service `sparkjava`.
+The compose file defines an application with one service `vuejs`.
 When deploying the application, docker-compose maps port 8080 of the web service container to port 8080 of the host as specified in the file.
 Make sure port 8080 on the host is not already being in use.
 

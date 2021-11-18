@@ -14,7 +14,6 @@ Project structure:
 
 [_docker-compose.yaml_](docker-compose.yaml)
 ```
-version: "3.7"
 services:
   web:
     build: angular
@@ -59,7 +58,7 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 
 After the application starts, navigate to `http://localhost:4200` in your web browser.
 
-![page](output.jpg)
+![page](output.png)
 
 Stop and remove the container
 
