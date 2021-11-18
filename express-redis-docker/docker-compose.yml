@@ -1,0 +1,42 @@
+version: "3.7"
+services:
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+  app:
+    build: ./
+    volumes:
+      - ./:/var/www/app
+    links:
+      - redis
+    ports:
+      - 3000:3000
+    environment:
+      - REDIS_URL=redis://cache
+      - NODE_ENV=development
+      - PORT=3000
+    command:
+      sh -c 'npm i && node server.js'
+
+  otel-collector:
+    image: quay.io/signalfx/splunk-otel-collector:0.37.1
+    hostname: hipstershop-redis
+    depends_on: 
+      - redis
+    env_file:
+      - .env.us0
+    volumes:
+        - "./otel-collector/gateway_config.yaml:/etc/otel/collector/gateway_config.yaml"
+    ports:
+      - "4317"
+      - "8006"
+      
+  loadgen:
+    image: locustio/locust
+    ports:
+     - 8089
+    volumes:
+      - ./loadgen:/mnt/locust
+    command: -f /mnt/locust/locust-loadgen.py --headless -H http://app:3000 -u 2 -r 1
