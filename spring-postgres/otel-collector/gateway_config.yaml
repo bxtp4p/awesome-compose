@@ -92,6 +92,12 @@ processors:
     detectors: [gce, ecs, ec2, azure, system]
     override: true
 
+  resource/add_host:
+    attributes:
+      action: insert
+      key: host
+      value: spring-postgres-example.tubalinal.io
+
 exporters:
   # Traces
   sapm:
@@ -121,7 +127,7 @@ service:
       exporters: [sapm, signalfx]
     metrics:
       receivers: [otlp, signalfx, smartagent/postgresql]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, batch, resource/add_host]
       exporters: [signalfx]
     metrics/internal:
       receivers: [prometheus/internal]
