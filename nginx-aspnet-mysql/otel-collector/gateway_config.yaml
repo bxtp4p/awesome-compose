@@ -74,6 +74,11 @@ receivers:
     host: nginx-proxy
     port: 80
 
+
+  smartagent/signalfx-forwarder:
+    type: signalfx-forwarder
+    listenAddress: 0.0.0.0:9080
+
 processors:
   batch:
   # Enabling the memory_limiter is strongly recommended for every pipeline.
@@ -121,7 +126,7 @@ service:
   extensions: [health_check, http_forwarder, zpages, memory_ballast]
   pipelines:
     traces:
-      receivers: [jaeger, otlp, sapm, zipkin]
+      receivers: [jaeger, otlp, sapm, zipkin, smartagent/signalfx-forwarder]
       processors:
       - memory_limiter
       - batch

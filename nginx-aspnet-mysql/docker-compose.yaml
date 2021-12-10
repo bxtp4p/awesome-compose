@@ -8,6 +8,9 @@ services:
       - db
     environment:
       - ASPNETCORE_URLS=http://+:8000
+      - SIGNALFX_SERVICE_NAME=aspnetcore-backend
+      - SIGNALFX_ENDPOINT_URL=http://otel-collector:9080/v1/trace
+      - SIGNALFX_PROPAGATOR=W3C
 #    depends_on:
 #      db:
 #        condition: service_healthy
@@ -36,6 +39,8 @@ services:
     hostname: nginx-proxy-prod-0.tubalinal.io
     ports:
       - 80
+    volumes:
+      - ./proxy/otel-nginx.toml:/conf/otel-nginx.toml
     depends_on: 
       - backend
 
@@ -51,7 +56,7 @@ services:
     image: quay.io/signalfx/splunk-otel-collector:0.37.1
     hostname: nginx-aspnet-mysql-example.tubalinal.io
     env_file:
-      - .env.us0
+      - .env.us1
     volumes:
        - "./otel-collector/gateway_config.yaml:/etc/otel/collector/gateway_config.yaml"
     ports:

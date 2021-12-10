@@ -1,4 +1,22 @@
 ## Compose sample application
+
+### Splunk Observability Steps
+
+Perform these steps to configure this to work with Splunk Observability.
+
+1. Download the [OpenTelemetry NGINX module](https://github.com/open-telemetry/opentelemetry-cpp-contrib/suites/4593268145/artifacts/123907654) to this project directory. Unzip it and rename as `0tel_ngx_module.so` if necessary.
+1. Create a `.env` file and reference it in the [docker-compose.yaml](docker-compose.yaml) file. Reference it in the `otel-collector` service's `env_file` section. It should include the following:
+
+   ```
+   SPLUNK_ACCESS_TOKEN=<your_token>
+   SPLUNK_REALM=<your_realm>
+   SPLUNK_API_URL=https://api.<your_realm>.signalfx.com
+   SPLUNK_HEC_TOKEN=<your_token>
+   SPLUNK_HEC_URL=https://ingest.<your_realm>.signalfx.com/v1/log
+   SPLUNK_INGEST_URL=https://ingest.<your_realm>.signalfx.com
+   SPLUNK_TRACE_URL=https://ingest.<your_realm>.signalfx.com/v2/trace
+   SPLUNK_CONFIG=/etc/otel/collector/gateway_config.yaml
+   ```
 ### ASP.NET server with an Nginx proxy and a MySQL database
 
 Project structure:

@@ -1,11 +1,20 @@
 server {
+
     listen       80;
     server_name  localhost;
     location / {
+        opentelemetry_operation_name aspnet_backend;
+        opentelemetry_propagate;
+        opentelemetry_capture_headers on;
+        add_header Server-Timing "traceparent;desc=\"$opentelemetry_context_traceparent\"";
+
         proxy_pass   http://backend:8000;
     }
 
     location = /nginx_status {
+        opentelemetry_operation_name nginx_status;
+        opentelemetry_propagate;
+
         stub_status;
     }
 }
