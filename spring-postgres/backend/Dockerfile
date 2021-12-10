@@ -14,7 +14,11 @@ FROM openjdk:11-jre-slim
 EXPOSE 8080
 VOLUME /tmp
 ARG DEPENDENCY=/workdir/server/target/dependency
+
+ADD https://github.com/signalfx/splunk-otel-java/releases/latest/download/splunk-otel-javaagent-all.jar //etc/sfx/splunk-otel-javaagent.jar
+
 COPY --from=builder ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=builder ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=builder ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.company.project.Application"]
+
+ENTRYPOINT ["java","-javaagent:/etc/sfx/splunk-otel-javaagent.jar", "-cp","app:app/lib/*","com.company.project.Application"]
