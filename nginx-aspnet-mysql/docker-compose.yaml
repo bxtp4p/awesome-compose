@@ -56,7 +56,7 @@ services:
     image: quay.io/signalfx/splunk-otel-collector:0.37.1
     hostname: nginx-aspnet-mysql-example.tubalinal.io
     env_file:
-      - .env.us1
+      - .env
     volumes:
        - "./otel-collector/gateway_config.yaml:/etc/otel/collector/gateway_config.yaml"
     ports:
