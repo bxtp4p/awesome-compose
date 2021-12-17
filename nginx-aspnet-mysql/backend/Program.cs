@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using OpenTracing;
+using OpenTracing.Util;
 
 class Program
 {
@@ -36,9 +38,19 @@ class Program
                         using var cmd = new MySqlCommand(sql, connection);
                         using MySqlDataReader reader = cmd.ExecuteReader();
 
+                        var tracer = GlobalTracer.Instance;
+
                         while (reader.Read())
                         {
-                            titles.Add(reader.GetString(0));
+                            using (var scope = tracer.BuildSpan("add-title").StartActive(finishSpanOnDispose: true))
+                            {
+                                var span = scope.Span;
+                                var blogTitle = reader.GetString(0);
+                                span.SetTag("blog-title", blogTitle);
+
+                                titles.Add(blogTitle);
+
+                            }
                         }
                         reader.Close();
                     }
@@ -65,20 +77,20 @@ class Program
             using MySqlConnection connection = new MySqlConnection(connectionString);
 
             connection.Open();
-            using var transation = connection.BeginTransaction();
+            using var transaction = connection.BeginTransaction();
 
-            using MySqlCommand cmd1 = new MySqlCommand("DROP TABLE IF EXISTS blog", connection, transation);
+            using MySqlCommand cmd1 = new MySqlCommand("DROP TABLE IF EXISTS blog", connection, transaction);
             cmd1.ExecuteNonQuery();
 
-            using MySqlCommand cmd2 = new MySqlCommand("CREATE TABLE IF NOT EXISTS blog (id int NOT NULL AUTO_INCREMENT, title varchar(255), PRIMARY KEY (id))", connection, transation);
+            using MySqlCommand cmd2 = new MySqlCommand("CREATE TABLE IF NOT EXISTS blog (id int NOT NULL AUTO_INCREMENT, title varchar(255), PRIMARY KEY (id))", connection, transaction);
             cmd2.ExecuteNonQuery();
             
             for (int i = 0; i < 5; i++)
             {
-                using MySqlCommand insertCommand = new MySqlCommand( $"INSERT INTO blog (title) VALUES ('Blog post #{i}');", connection, transation);
+                using MySqlCommand insertCommand = new MySqlCommand( $"INSERT INTO blog (title) VALUES ('Blog post #{i}');", connection, transaction);
                 insertCommand.ExecuteNonQuery();
 	        }
-            transation.Commit();
+            transaction.Commit();
             connection.Close();
         }
 }
