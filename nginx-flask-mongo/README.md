@@ -1,4 +1,12 @@
 ## Compose sample application
+
+
+### Splunk Observability Steps
+
+Perform these steps to configure this to work with Splunk Observability.
+
+1. Copy the [example.env](./example.env) file, set the environment variables and save it as `.env`.
+
 ### Python/Flask application with Nginx proxy and a Mongo database
 
 Project structure:
