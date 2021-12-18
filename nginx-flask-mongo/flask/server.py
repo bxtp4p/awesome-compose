@@ -5,6 +5,7 @@ import random
 from splunk_otel.tracing import start_tracing
 from opentelemetry import trace
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry._metrics import get_meter
 
 from flask import Flask
 from pymongo import MongoClient
@@ -20,11 +21,16 @@ db = client.blog_db
 
 tracer = trace.get_tracer(__name__)
 
+meter = get_meter(__name__)
+viewCounter = meter.create_counter(name="blog_views", description="number of blog post views")
+
 @app.route('/')
 def todo():
     try:
         # retrieve a random blog post
         post = get_random_post(random.randint(1,5))
+
+        viewCounter.add(1, {"post_author": post["author"], "post_title": post["title"]})
         return f'{post["title"]} by {post["author"]}'
     except:
         return "Server Error"
